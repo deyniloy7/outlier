@@ -1,18 +1,12 @@
-const tape = require('tape')
-const jsonist = require('jsonist')
+const http = require('http')
 
-const PORT = process.env.PORT = process.env.PORT || require('get-PORT-sync')()
-const server = require('./server')
+const PORT = process.env.PORT || 3000
 
-const urlBase = `http://localhost:${PORT}`
+const server = http.createServer((req, res) => {
+  if (req.url === '/') return respondHello(req, res)
+  if (req.url.match(/^\/b64\//)) return respondBase64(req, res)
 
-tape('should respond hello', (t) => {
-  jsonist.get(urlBase, (err, body) => {
-    if (err) t.error(err)
-
-    t.equal(body.msg, 'hello')
-    t.end()
-  })
+  res.end()
 })
 
 tape('should respond user-agent', (t) => {
@@ -25,7 +19,7 @@ tape('should respond user-agent', (t) => {
   })
 })
 
-tape('cleanup', function (t) {
-  server.close()
-  t.end()
-})
+server.listen(PORT)
+console.log(`Server listening on port ${PORT}`)
+
+if (require.main !== module) module.exports = server
